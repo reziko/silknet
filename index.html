@@ -1,358 +1,260 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>სილქნეტის როუთერის პაროლის გენერატორი</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Silknet როუთერის პაროლი</title>
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            --error-color: #e53e3e;
+            --success-color: #38a169;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
-            color: #f3f4f6;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
-        .mono-font {
-            font-family: 'JetBrains Mono', monospace;
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            text-align: center;
+            letter-spacing: -0.02em;
         }
-        .glow-effect {
-            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+        }
+
+        input:focus {
+            border-color: var(--text-main);
+        }
+
+        input::placeholder {
+            color: #a0a0a0;
+            letter-spacing: normal;
+            text-transform: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--text-main);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background-color: #333333;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .result-container {
+            min-height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .password-display {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .password-display:hover {
+            background-color: #f5f5f5;
+        }
+
+        .message {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+
+        .error {
+            color: var(--error-color);
+        }
+
+        .success {
+            color: var(--success-color);
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between antialiased">
+<body>
 
-    <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12 w-full flex-grow">
-        <!-- Header Section -->
-        <header class="text-center mb-10">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-4">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457-.39-2.823-1.07-4"></path>
-                </svg>
-                Router Admin Recovery Tool
-            </div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
-                Silknet Admin Password Calculator
-            </h1>
-            <p class="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
-                Generates the default administrator key based on the router MAC address, current month, and reversed year.
-            </p>
-        </header>
+    <div class="container">
+        <h1>Silknet</h1>
+        
+        <div class="input-group">
+            <label for="macInput">MAC Address</label>
+            <input type="text" id="macInput" placeholder="e.g. 28:5B:0C:95:64:00" autocomplete="off" spellcheck="false">
+        </div>
 
-        <main class="grid grid-cols-1 gap-6">
-            <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-2xl">
-                <!-- MAC Address Input Section -->
-                <div class="mb-6">
-                    <label for="macInput" class="block text-sm font-medium text-slate-300 mb-2">
-                        Router MAC Address
-                    </label>
-                    <div class="relative">
-                        <input type="text" id="macInput" placeholder="e.g. 28:5B:0C:95:64:00 or 285B0C956400" 
-                            class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-4 py-3.5 text-slate-100 placeholder-slate-500 mono-font text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-indigo-500 transition-all uppercase tracking-wider"
-                            value="285B0C956400"
-                            autocomplete="off">
-                        <div id="validBadge" class="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Valid MAC
-                        </div>
-                    </div>
-                    <p id="macError" class="text-rose-400 text-xs mt-2 hidden">
-                        Invalid MAC address format. Please enter 12 hexadecimal characters (0-9, A-F).
-                    </p>
-                </div>
+        <button id="generateBtn">Generate Password</button>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label for="monthSelect" class="block text-xs font-medium text-slate-400 mb-1">
-                            Target Month (MM)
-                        </label>
-                        <select id="monthSelect" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="01">01 - January</option>
-                            <option value="02">02 - February</option>
-                            <option value="03">03 - March</option>
-                            <option value="04">04 - April</option>
-                            <option value="05">05 - May</option>
-                            <option value="06">06 - June</option>
-                            <option value="07">07 - July</option>
-                            <option value="08">08 - August</option>
-                            <option value="09">09 - September</option>
-                            <option value="10">10 - October</option>
-                            <option value="11">11 - November</option>
-                            <option value="12">12 - December</option>
-                        </select>
-                    </div>
+        <div class="result-container">
+            <div id="passwordResult" class="password-display" style="display: none;" title="Click to copy"></div>
+            <div id="statusMessage" class="message"></div>
+        </div>
 
-                    <div>
-                        <label for="yearInput" class="block text-xs font-medium text-slate-400 mb-1">
-                            Target Year (YYYY)
-                        </label>
-                        <div class="flex gap-2">
-                            <input type="number" id="yearInput" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none mono-font" min="2000" max="2099">
-                            <button id="resetDateBtn" title="Reset to Current Date" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 shrink-0">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                Current
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 mb-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">MAC Address Byte Inspector</span>
-                        <span id="cleanMacDisplay" class="text-xs mono-font text-slate-500">CLEAN: 285B0C956400</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-6 gap-1.5 sm:gap-2 text-center">
-                        <div class="p-2 bg-slate-800/60 rounded border border-slate-700/50">
-                            <div class="text-[10px] text-slate-500">Byte 1</div>
-                            <div id="b1" class="mono-font text-sm font-semibold text-slate-400">28</div>
-                        </div>
-                        <div class="p-2 bg-slate-800/60 rounded border border-slate-700/50">
-                            <div class="text-[10px] text-slate-500">Byte 2</div>
-                            <div id="b2" class="mono-font text-sm font-semibold text-slate-400">5B</div>
-                        </div>
-                        <div class="p-2 bg-slate-800/60 rounded border border-slate-700/50">
-                            <div class="text-[10px] text-slate-500">Byte 3</div>
-                            <div id="b3" class="mono-font text-sm font-semibold text-slate-400">0C</div>
-                        </div>
-                        <div class="p-2 bg-slate-800/60 rounded border border-slate-700/50">
-                            <div class="text-[10px] text-slate-500">Byte 4</div>
-                            <div id="b4" class="mono-font text-sm font-semibold text-slate-400">95</div>
-                        </div>
-                        <div class="p-2 bg-indigo-950/80 rounded border border-indigo-500/50 ring-2 ring-indigo-500/20">
-                            <div class="text-[10px] text-indigo-300 font-semibold">Byte 5 ★</div>
-                            <div id="b5" class="mono-font text-sm font-bold text-indigo-300">64</div>
-                        </div>
-                        <div class="p-2 bg-cyan-950/80 rounded border border-cyan-500/50 ring-2 ring-cyan-500/20">
-                            <div class="text-[10px] text-cyan-300 font-semibold">Byte 6 ★</div>
-                            <div id="b6" class="mono-font text-sm font-bold text-cyan-300">00</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="relative bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/30 rounded-xl p-5 sm:p-6 text-center glow-effect mb-6">
-                    <span class="text-xs uppercase tracking-widest text-indigo-400 font-semibold block mb-2">Calculated Admin Password</span>
-                    
-                    <div class="flex items-center justify-center gap-3">
-                        <span id="passwordResult" class="mono-font text-2xl sm:text-4xl font-bold tracking-wider text-white select-all">
-                            64!10006202
-                        </span>
-                    </div>
-
-                    <div class="mt-4 flex justify-center">
-                        <button id="copyBtn" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-lg shadow-indigo-600/30 transition-all duration-150 cursor-pointer">
-                            <svg id="copyIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            <span id="copyBtnText">Copy Password</span>
-                        </button>
-                    </div>
-
-                    <!-- Notification Banner for Feedback -->
-                    <div id="toast" class="opacity-0 transition-opacity duration-300 absolute -bottom-10 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg pointer-events-none">
-                        Copied to clipboard!
-                    </div>
-                </div>
-
-                <div class="border-t border-slate-800 pt-6">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Formula Pattern Structure</h3>
-                    <div class="flex flex-wrap items-center justify-center gap-2 text-xs mono-font">
-                        <span class="px-2.5 py-1.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/40" id="chipB5">
-                            [Byte 5: 64]
-                        </span>
-                        <span class="text-slate-500 font-bold">+</span>
-                        <span class="px-2.5 py-1.5 rounded bg-slate-800 text-amber-300 border border-slate-700">
-                            !
-                        </span>
-                        <span class="text-slate-500 font-bold">+</span>
-                        <span class="px-2.5 py-1.5 rounded bg-slate-800 text-emerald-400 border border-slate-700" id="chipMonth">
-                            [Month: 10]
-                        </span>
-                        <span class="text-slate-500 font-bold">+</span>
-                        <span class="px-2.5 py-1.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40" id="chipB6">
-                            [Byte 6: 00]
-                        </span>
-                        <span class="text-slate-500 font-bold">+</span>
-                        <span class="px-2.5 py-1.5 rounded bg-slate-800 text-purple-400 border border-slate-700" id="chipYear">
-                            [Rev Year: 6202]
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="mt-10 text-center text-xs text-slate-600">
-           სილქნეტი როუთერის პაროლის გამგები &bull; 
-        </footer>
+        <p class="hint">Calculates using your device's current date.</p>
     </div>
 
     <script>
-        // DOM Elements
-        const macInput = document.getElementById('macInput');
-        const monthSelect = document.getElementById('monthSelect');
-        const yearInput = document.getElementById('yearInput');
-        const resetDateBtn = document.getElementById('resetDateBtn');
-        const validBadge = document.getElementById('validBadge');
-        const macError = document.getElementById('macError');
-        const cleanMacDisplay = document.getElementById('cleanMacDisplay');
-        const passwordResult = document.getElementById('passwordResult');
-        const copyBtn = document.getElementById('copyBtn');
-        const copyBtnText = document.getElementById('copyBtnText');
-        const toast = document.getElementById('toast');
+        document.addEventListener('DOMContentLoaded', () => {
+            const macInput = document.getElementById('macInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const passwordResult = document.getElementById('passwordResult');
+            const statusMessage = document.getElementById('statusMessage');
 
-        // Byte Displays
-        const b1 = document.getElementById('b1');
-        const b2 = document.getElementById('b2');
-        const b3 = document.getElementById('b3');
-        const b4 = document.getElementById('b4');
-        const b5 = document.getElementById('b5');
-        const b6 = document.getElementById('b6');
+            function calculatePassword() {
+                // Reset UI
+                passwordResult.style.display = 'none';
+                passwordResult.textContent = '';
+                statusMessage.textContent = '';
+                statusMessage.className = 'message';
 
-        // Chip Displays
-        const chipB5 = document.getElementById('chipB5');
-        const chipMonth = document.getElementById('chipMonth');
-        const chipB6 = document.getElementById('chipB6');
-        const chipYear = document.getElementById('chipYear');
-
-        function setDateToCurrent() {
-            const now = new Date();
-            const monthStr = String(now.getMonth() + 1).padStart(2, '0');
-            const yearStr = String(now.getFullYear());
-            
-            monthSelect.value = monthStr;
-            yearInput.value = yearStr;
-            calculatePassword();
-        }
-
-        function calculatePassword() {
-            const rawMac = macInput.value || '';
-            const cleanMac = rawMac.replace(/[^A-Fa-f0-9]/g, '').toUpperCase();
-            cleanMacDisplay.textContent = `CLEAN: ${cleanMac || '---'}`;
-
-            if (cleanMac.length !== 12) {
-                validBadge.classList.add('hidden');
-                macError.classList.remove('hidden');
-                passwordResult.textContent = "INVALID MAC";
-                passwordResult.classList.add('text-rose-400');
+                const rawMac = macInput.value;
                 
-                // Clear byte visualization
-                b1.textContent = '--';
-                b2.textContent = '--';
-                b3.textContent = '--';
-                b4.textContent = '--';
-                b5.textContent = '--';
-                b6.textContent = '--';
-                return;
+                // Clean the MAC address
+                const cleanMac = rawMac.replace(/[^A-Fa-f0-9]/g, '').toUpperCase();
+
+                if (cleanMac.length !== 12) {
+                    statusMessage.textContent = 'Invalid format. Must be 12 characters.';
+                    statusMessage.className = 'message error';
+                    return;
+                }
+
+                // Extract bytes
+                const byte5 = cleanMac.substring(8, 10);
+                const byte6 = cleanMac.substring(10, 12);
+
+                // Get date logic
+                const now = new Date();
+                const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+                const reversedYear = String(now.getFullYear()).split('').reverse().join('');
+
+                // Construct password
+                const password = `${byte5}!${monthStr}${byte6}${reversedYear}`;
+
+                // Display result
+                passwordResult.textContent = password;
+                passwordResult.style.display = 'block';
+                statusMessage.textContent = 'Click password to copy';
+                statusMessage.className = 'message hint';
             }
 
-            // Valid MAC logic
-            validBadge.classList.remove('hidden');
-            macError.classList.add('hidden');
-            passwordResult.classList.remove('text-rose-400');
+            generateBtn.addEventListener('click', calculatePassword);
 
-            // Extract Bytes
-            const byte1 = cleanMac.substring(0, 2);
-            const byte2 = cleanMac.substring(2, 4);
-            const byte3 = cleanMac.substring(4, 6);
-            const byte4 = cleanMac.substring(6, 8);
-            const byte5 = cleanMac.substring(8, 10);
-            const byte6 = cleanMac.substring(10, 12);
+            // Allow pressing Enter in the input field
+            macInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    calculatePassword();
+                }
+            });
 
-            // Update Byte visualizer
-            b1.textContent = byte1;
-            b2.textContent = byte2;
-            b3.textContent = byte3;
-            b4.textContent = byte4;
-            b5.textContent = byte5;
-            b6.textContent = byte6;
+            // Click to copy functionality
+            passwordResult.addEventListener('click', () => {
+                const textToCopy = passwordResult.textContent;
+                
+                // Use fallback approach for wide compatibility (especially in iframes)
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
 
-            // Date processing
-            const monthStr = monthSelect.value;
-            const rawYear = String(yearInput.value || new Date().getFullYear());
-            const reversedYear = rawYear.split('').reverse().join('');
-
-            // Formula: byte_5 + "!" + month_str + byte_6 + reversed_year
-            const password = `${byte5}!${monthStr}${byte6}${reversedYear}`;
-            passwordResult.textContent = password;
-
-            // Update Breakdown Chips
-            chipB5.textContent = `[Byte 5: ${byte5}]`;
-            chipMonth.textContent = `[Month: ${monthStr}]`;
-            chipB6.textContent = `[Byte 6: ${byte6}]`;
-            chipYear.textContent = `[Rev Year: ${reversedYear}]`;
-        }
-
-        function copyPasswordToClipboard() {
-            const textToCopy = passwordResult.textContent.trim();
-            if (textToCopy === 'INVALID MAC') return;
-
-            // Use document.execCommand fallback for iframe safety
-            const textArea = document.createElement("textarea");
-            textArea.value = textToCopy;
-            textArea.style.position = "fixed";  // Avoid scrolling to bottom
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-
-            try {
-                document.execCommand('copy');
-                showToast();
-            } catch (err) {
-                console.error('Fallback: Could not copy text', err);
-            }
-            document.body.removeChild(textArea);
-        }
-
-        function showToast() {
-            copyBtnText.textContent = "Copied!";
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-
-            setTimeout(() => {
-                copyBtnText.textContent = "Copy Password";
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0');
-            }, 2000);
-        }
-
-        macInput.addEventListener('input', calculatePassword);
-        monthSelect.addEventListener('change', calculatePassword);
-        yearInput.addEventListener('input', calculatePassword);
-        resetDateBtn.addEventListener('click', setDateToCurrent);
-        copyBtn.addEventListener('click', copyPasswordToClipboard);
-
-        // Initialize with default date & default MAC calculation
-        window.addEventListener('load', () => {
-            setDateToCurrent();
+                try {
+                    document.execCommand('copy');
+                    statusMessage.textContent = 'Copied to clipboard!';
+                    statusMessage.className = 'message success';
+                    
+                    // Reset message after 2 seconds
+                    setTimeout(() => {
+                        if (statusMessage.textContent === 'Copied to clipboard!') {
+                            statusMessage.textContent = 'Click password to copy';
+                            statusMessage.className = 'message hint';
+                        }
+                    }, 2000);
+                } catch (err) {
+                    statusMessage.textContent = 'Failed to copy';
+                    statusMessage.className = 'message error';
+                }
+                
+                document.body.removeChild(textArea);
+            });
         });
     </script>
 </body>
